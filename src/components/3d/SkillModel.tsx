@@ -2,10 +2,11 @@
 import { useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
+import { MeshStandardMaterial } from "three";
 
 // A single floating element of the skill
 const SkillElement = ({ position, size, rotationSpeed, color }) => {
-  const ref = useRef();
+  const ref = useRef(null);
 
   useFrame((state) => {
     if (ref.current) {

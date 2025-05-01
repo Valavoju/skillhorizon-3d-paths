@@ -1,13 +1,13 @@
 
 import { useRef, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Text, useTexture, GradientTexture } from "@react-three/drei";
-import { Vector3 } from "three";
+import { OrbitControls, Text } from "@react-three/drei";
+import { Vector3, MeshStandardMaterial, LineBasicMaterial } from "three";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Interactive floating node that represents a skill or career milestone
 const CareerNode = ({ position, skill, size = 1, color = "#9B87F5", onClick, active, id }) => {
-  const ref = useRef();
+  const ref = useRef(null);
   const [hovered, setHovered] = useState(false);
   
   useFrame((state) => {
@@ -60,7 +60,7 @@ const CareerNode = ({ position, skill, size = 1, color = "#9B87F5", onClick, act
 
 // Connection line between nodes
 const ConnectionLine = ({ start, end, active }) => {
-  const ref = useRef();
+  const ref = useRef(null);
 
   useFrame(() => {
     if (ref.current) {
@@ -71,7 +71,12 @@ const ConnectionLine = ({ start, end, active }) => {
   return (
     <line ref={ref}>
       <bufferGeometry />
-      <lineBasicMaterial color={active ? "#3B82F6" : "#7E69AB"} linewidth={1} opacity={active ? 1 : 0.4} transparent />
+      <lineBasicMaterial 
+        color={active ? "#3B82F6" : "#7E69AB"} 
+        linewidth={1} 
+        opacity={active ? 1 : 0.4} 
+        transparent
+      />
     </line>
   );
 };
@@ -79,7 +84,7 @@ const ConnectionLine = ({ start, end, active }) => {
 // Main career path component with nodes and connections
 const CareerPathModel = ({ paths }) => {
   const [activeNode, setActiveNode] = useState(null);
-  const ref = useRef();
+  const ref = useRef(null);
 
   useFrame((state) => {
     if (ref.current) {
@@ -122,7 +127,7 @@ const CareerPathModel = ({ paths }) => {
 
 // Background sphere
 const EnvironmentSphere = () => {
-  const ref = useRef();
+  const ref = useRef(null);
   
   useFrame((state) => {
     if (ref.current) {
@@ -135,8 +140,12 @@ const EnvironmentSphere = () => {
   return (
     <mesh ref={ref} scale={[20, 20, 20]}>
       <sphereGeometry args={[1, 20, 20]} />
-      <meshBasicMaterial side={2} transparent opacity={0.1}>
-        <GradientTexture
+      <meshBasicMaterial 
+        transparent 
+        opacity={0.1}
+        side={2}
+      >
+        <gradientTexture
           stops={[0, 0.3, 0.6, 1]} 
           colors={['#231c40', '#3e3168', '#4d3e82', '#2a2249']} 
           size={1024}
