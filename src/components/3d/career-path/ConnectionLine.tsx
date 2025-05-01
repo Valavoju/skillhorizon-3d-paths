@@ -1,24 +1,28 @@
 
 import { Vector3 } from "three";
-import { BufferGeometry, Line } from "three";
+import { Line } from "@react-three/drei";
+
+interface ConnectionLineProps {
+  start: [number, number, number];
+  end: [number, number, number];
+  active: boolean;
+}
 
 // Connection line between nodes
-const ConnectionLine = ({ start, end, active }) => {
-  const points = [new Vector3(...start), new Vector3(...end)];
+const ConnectionLine = ({ start, end, active }: ConnectionLineProps) => {
+  const points = [
+    new Vector3(...start), 
+    new Vector3(...end)
+  ];
   
   return (
-    <line>
-      <bufferGeometry attach="geometry">
-        <float32BufferAttribute attach="attributes-position" args={[points.flatMap(p => [p.x, p.y, p.z]), 3]} />
-      </bufferGeometry>
-      <lineBasicMaterial 
-        attach="material"
-        color={active ? "#3B82F6" : "#7E69AB"} 
-        linewidth={1} 
-        opacity={active ? 1 : 0.4} 
-        transparent
-      />
-    </line>
+    <Line 
+      points={points}
+      color={active ? "#3B82F6" : "#7E69AB"}
+      lineWidth={1}
+      opacity={active ? 1 : 0.4}
+      transparent
+    />
   );
 };
 
