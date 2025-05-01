@@ -1,7 +1,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Text } from "@react-three/drei";
+import { OrbitControls, Text, GradientTexture } from "@react-three/drei";
 import { Vector3, MeshStandardMaterial, LineBasicMaterial } from "three";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -145,7 +145,7 @@ const EnvironmentSphere = () => {
         opacity={0.1}
         side={2}
       >
-        <gradientTexture
+        <GradientTexture
           stops={[0, 0.3, 0.6, 1]} 
           colors={['#231c40', '#3e3168', '#4d3e82', '#2a2249']} 
           size={1024}
