@@ -2,7 +2,7 @@
 import { useRef, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Text, GradientTexture } from "@react-three/drei";
-import { Vector3, MeshStandardMaterial, LineBasicMaterial } from "three";
+import { Vector3 } from "three";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Interactive floating node that represents a skill or career milestone
@@ -60,18 +60,13 @@ const CareerNode = ({ position, skill, size = 1, color = "#9B87F5", onClick, act
 
 // Connection line between nodes
 const ConnectionLine = ({ start, end, active }) => {
-  const ref = useRef(null);
-
-  useFrame(() => {
-    if (ref.current) {
-      ref.current.geometry.setFromPoints([start, end].map(p => new Vector3(...p)));
-    }
-  });
-
+  const points = [new Vector3(...start), new Vector3(...end)];
+  
   return (
-    <line ref={ref}>
-      <bufferGeometry />
+    <line>
+      <bufferGeometry attach="geometry" setFromPoints={points} />
       <lineBasicMaterial 
+        attach="material"
         color={active ? "#3B82F6" : "#7E69AB"} 
         linewidth={1} 
         opacity={active ? 1 : 0.4} 
