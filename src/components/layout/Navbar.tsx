@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import AuthDialog from "@/components/auth/AuthDialog";
 
 const Navbar = () => {
@@ -20,6 +21,7 @@ const Navbar = () => {
   const [authDialogTab, setAuthDialogTab] = useState<'signin' | 'signup'>('signin');
   const isMobile = useIsMobile();
   const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -50,6 +52,10 @@ const Navbar = () => {
   const handleGetStarted = () => {
     setAuthDialogTab('signin');
     setAuthDialogOpen(true);
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
   };
 
   return (
@@ -93,8 +99,8 @@ const Navbar = () => {
                 {isAuthenticated && user ? (
                   <div className="flex items-center gap-2">
                     <span className="text-sm">Welcome, {user.name.split(' ')[0]}</span>
-                    <Button variant="outline" size="sm" asChild>
-                      <a href="#profile">Profile</a>
+                    <Button variant="outline" size="sm" onClick={handleProfileClick}>
+                      Profile
                     </Button>
                   </div>
                 ) : (
@@ -142,8 +148,11 @@ const Navbar = () => {
                 {isAuthenticated && user ? (
                   <div className="text-center">
                     <p className="mb-2">Welcome, {user.name}</p>
-                    <Button className="w-full" asChild>
-                      <a href="#profile">View Profile</a>
+                    <Button className="w-full" onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleProfileClick();
+                    }}>
+                      View Profile
                     </Button>
                   </div>
                 ) : (

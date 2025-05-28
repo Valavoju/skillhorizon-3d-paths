@@ -3,12 +3,30 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, LogOut, Briefcase, Star } from 'lucide-react';
+import { User, LogOut, Briefcase, Star, Code, Brain, Target } from 'lucide-react';
 
 const UserProfile = () => {
   const { user, logout } = useAuth();
 
   if (!user) return null;
+
+  const skills = [
+    { name: 'React', level: 'Advanced', category: 'Frontend' },
+    { name: 'TypeScript', level: 'Intermediate', category: 'Language' },
+    { name: 'Node.js', level: 'Intermediate', category: 'Backend' },
+    { name: 'Python', level: 'Advanced', category: 'Language' },
+    { name: 'AWS', level: 'Beginner', category: 'Cloud' },
+    { name: 'Git', level: 'Advanced', category: 'Tools' }
+  ];
+
+  const getLevelColor = (level: string) => {
+    switch (level) {
+      case 'Advanced': return 'bg-green-100 text-green-800';
+      case 'Intermediate': return 'bg-yellow-100 text-yellow-800';
+      case 'Beginner': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
     <div className="container py-8">
@@ -57,6 +75,33 @@ const UserProfile = () => {
           </CardContent>
         </Card>
 
+        {/* Skills Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Code className="h-5 w-5 text-purple-500" />
+              Skills & Expertise
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {skills.map((skill, index) => (
+                <div key={index} className="p-3 border rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-medium">{skill.name}</h3>
+                    <Badge variant="outline" className="text-xs">
+                      {skill.category}
+                    </Badge>
+                  </div>
+                  <Badge className={`text-xs ${getLevelColor(skill.level)}`}>
+                    {skill.level}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Job Recommendations */}
         <Card>
           <CardHeader>
@@ -75,11 +120,44 @@ const UserProfile = () => {
                       Match: {90 - index * 5}% • Remote Available
                     </p>
                   </div>
-                  <Badge variant="secondary">
-                    New
-                  </Badge>
+                  <div className="flex gap-2">
+                    <Badge variant="secondary">
+                      New
+                    </Badge>
+                    <Button size="sm" variant="outline">
+                      Apply
+                    </Button>
+                  </div>
                 </div>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Career Goals */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5 text-green-500" />
+              Career Goals
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="p-3 border rounded-lg">
+                <h3 className="font-medium">Senior Full Stack Developer</h3>
+                <p className="text-sm text-muted-foreground">Target: 2024</p>
+                <div className="mt-2 w-full bg-secondary rounded-full h-2">
+                  <div className="bg-green-500 h-2 rounded-full w-3/4"></div>
+                </div>
+              </div>
+              <div className="p-3 border rounded-lg">
+                <h3 className="font-medium">AWS Certification</h3>
+                <p className="text-sm text-muted-foreground">Solutions Architect</p>
+                <div className="mt-2 w-full bg-secondary rounded-full h-2">
+                  <div className="bg-blue-500 h-2 rounded-full w-1/2"></div>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
