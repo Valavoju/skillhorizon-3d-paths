@@ -1,14 +1,19 @@
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, LogOut, Briefcase, Star, Code, Brain, Target } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { User, LogOut, Briefcase, Star, Code, Brain, Target, ArrowLeft } from 'lucide-react';
 
 const UserProfile = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   if (!user) return null;
+
+  const handleBackToDashboard = () => {
+    navigate('/');
+  };
 
   const skills = [
     { name: 'React', level: 'Advanced', category: 'Frontend' },
@@ -31,6 +36,16 @@ const UserProfile = () => {
   return (
     <div className="container py-8">
       <div className="max-w-4xl mx-auto space-y-6">
+        {/* Back Button */}
+        <Button 
+          variant="outline" 
+          onClick={handleBackToDashboard}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Dashboard
+        </Button>
+
         {/* Profile Header */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
