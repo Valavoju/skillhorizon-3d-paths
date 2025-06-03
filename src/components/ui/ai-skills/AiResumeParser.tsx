@@ -3,6 +3,25 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { FileText, Upload, Check, AlertTriangle } from "lucide-react";
+import { analyzeResumeWithGemini, extractTextFromFile } from "@/utils/geminiApi";
+import { useToast } from "@/hooks/use-toast";
+
+interface ResumeAnalysis {
+  skills: string[];
+  education: {
+    degree: string;
+    institution: string;
+    period: string;
+  }[];
+  experience: {
+    title: string;
+    company: string;
+    period: string;
+    description?: string;
+  }[];
+  summary: string;
+  recommendations: string[];
+}
 
 interface AiResumeParserProps {
   className?: string;
@@ -12,6 +31,8 @@ export const AiResumeParser: React.FC<AiResumeParserProps> = ({ className }) => 
   const [stage, setStage] = useState<'upload' | 'analyzing' | 'complete'>('upload');
   const [progress, setProgress] = useState(0);
   const [file, setFile] = useState<File | null>(null);
+  const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null);
+  const { toast } = useToast();
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -20,31 +41,60 @@ export const AiResumeParser: React.FC<AiResumeParserProps> = ({ className }) => 
     }
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) return;
     
     setStage('analyzing');
     setProgress(0);
     
-    // Simulate analysis progress
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        const newProgress = prev + 5;
-        if (newProgress >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            setStage('complete');
-          }, 500);
-        }
-        return newProgress;
+    try {
+      // Simulate progress while processing
+      const progressInterval = setInterval(() => {
+        setProgress(prev => {
+          const newProgress = prev + 10;
+          if (newProgress >= 90) {
+            clearInterval(progressInterval);
+          }
+          return newProgress;
+        });
+      }, 300);
+      
+      // Extract text from file
+      const resumeText = await extractTextFromFile(file);
+      
+      // Analyze with Gemini API
+      const result = await analyzeResumeWithGemini(resumeText);
+      
+      clearInterval(progressInterval);
+      setProgress(100);
+      setAnalysis(result);
+      
+      setTimeout(() => {
+        setStage('complete');
+        toast({
+          title: "Resume Analysis Complete",
+          description: "Your resume has been successfully analyzed with AI.",
+        });
+      }, 500);
+      
+    } catch (error) {
+      console.error('Resume analysis error:', error);
+      toast({
+        title: "Analysis Failed",
+        description: "Failed to analyze resume. Please try again.",
+        variant: "destructive",
       });
-    }, 120);
+      setStage('upload');
+      setProgress(0);
+    }
   };
   
   const handleReset = () => {
     setStage('upload');
     setFile(null);
+    setAnalysis(null);
+    setProgress(0);
   };
   
   return (
@@ -60,7 +110,7 @@ export const AiResumeParser: React.FC<AiResumeParserProps> = ({ className }) => 
         {stage === 'upload' && (
           <form onSubmit={handleSubmit}>
             <p className="text-muted-foreground mb-6">
-              Upload your resume and our AI will automatically extract your skills and experiences.
+              Upload your resume and our AI will automatically extract your skills and experiences using advanced Gemini AI technology.
             </p>
             
             <div className="border-2 border-dashed border-muted rounded-lg p-6 mb-6 text-center">
@@ -68,13 +118,13 @@ export const AiResumeParser: React.FC<AiResumeParserProps> = ({ className }) => 
                 type="file"
                 id="resume-upload"
                 className="hidden"
-                accept=".pdf,.doc,.docx"
+                accept=".pdf,.doc,.docx,.txt"
                 onChange={handleFileChange}
               />
               <label htmlFor="resume-upload" className="cursor-pointer block">
                 <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                 <p className="font-medium">Drag and drop or click to upload</p>
-                <p className="text-sm text-muted-foreground mb-2">Supports PDF, DOC, DOCX</p>
+                <p className="text-sm text-muted-foreground mb-2">Supports PDF, DOC, DOCX, TXT</p>
                 {file && (
                   <div className="mt-3 py-1 px-3 bg-secondary inline-flex items-center rounded text-sm">
                     <FileText className="h-4 w-4 mr-2" />
@@ -85,7 +135,7 @@ export const AiResumeParser: React.FC<AiResumeParserProps> = ({ className }) => 
             </div>
             
             <Button type="submit" className="w-full" disabled={!file}>
-              Analyze Resume
+              Analyze Resume with AI
             </Button>
           </form>
         )}
@@ -96,7 +146,7 @@ export const AiResumeParser: React.FC<AiResumeParserProps> = ({ className }) => 
               <div className="h-16 w-16 mx-auto mb-4 rounded-full border-4 border-t-primary border-secondary animate-spin"></div>
               <h4 className="font-medium">Analyzing Your Resume</h4>
               <p className="text-sm text-muted-foreground mb-4">
-                Our AI is extracting skills and experience from your document
+                Our Gemini AI is extracting skills and experience from your document
               </p>
             </div>
             <Progress value={progress} className="mb-2" />
@@ -104,18 +154,25 @@ export const AiResumeParser: React.FC<AiResumeParserProps> = ({ className }) => 
           </div>
         )}
         
-        {stage === 'complete' && (
+        {stage === 'complete' && analysis && (
           <div>
             <div className="flex items-center mb-6">
               <Check className="h-5 w-5 text-green-600 mr-2" />
-              <p className="text-green-600 font-medium">Resume Analysis Complete!</p>
+              <p className="text-green-600 font-medium">AI Analysis Complete!</p>
             </div>
             
             <div className="space-y-6 mb-6">
               <div>
+                <h4 className="font-semibold mb-2">Professional Summary</h4>
+                <div className="bg-secondary/50 p-3 rounded-lg">
+                  <p className="text-sm">{analysis.summary}</p>
+                </div>
+              </div>
+
+              <div>
                 <h4 className="font-semibold mb-2">Extracted Skills</h4>
                 <div className="flex flex-wrap gap-2">
-                  {['Project Management', 'UI/UX Design', 'JavaScript', 'React', 'Team Leadership', 'Data Analysis'].map((skill, idx) => (
+                  {analysis.skills.map((skill, idx) => (
                     <span 
                       key={idx}
                       className="py-1 px-3 bg-secondary rounded-full text-sm"
@@ -128,23 +185,37 @@ export const AiResumeParser: React.FC<AiResumeParserProps> = ({ className }) => 
               
               <div>
                 <h4 className="font-semibold mb-2">Education</h4>
-                <div className="bg-secondary/50 p-3 rounded-lg">
-                  <p className="font-medium">Bachelor of Computer Science</p>
-                  <p className="text-sm">University Tech Institute, 2018 - 2022</p>
+                <div className="space-y-2">
+                  {analysis.education.map((edu, idx) => (
+                    <div key={idx} className="bg-secondary/50 p-3 rounded-lg">
+                      <p className="font-medium">{edu.degree}</p>
+                      <p className="text-sm">{edu.institution}, {edu.period}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
               
               <div>
                 <h4 className="font-semibold mb-2">Experience</h4>
                 <div className="space-y-3">
-                  <div className="bg-secondary/50 p-3 rounded-lg">
-                    <p className="font-medium">Junior Developer</p>
-                    <p className="text-sm">Tech Solutions Inc., 2022 - Present</p>
-                  </div>
-                  <div className="bg-secondary/50 p-3 rounded-lg">
-                    <p className="font-medium">Web Design Intern</p>
-                    <p className="text-sm">Creative Studio, 2021 - 2022</p>
-                  </div>
+                  {analysis.experience.map((exp, idx) => (
+                    <div key={idx} className="bg-secondary/50 p-3 rounded-lg">
+                      <p className="font-medium">{exp.title}</p>
+                      <p className="text-sm">{exp.company}, {exp.period}</p>
+                      {exp.description && <p className="text-xs text-muted-foreground mt-1">{exp.description}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-2">Career Recommendations</h4>
+                <div className="space-y-2">
+                  {analysis.recommendations.map((rec, idx) => (
+                    <div key={idx} className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                      <p className="text-sm">{rec}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -152,13 +223,13 @@ export const AiResumeParser: React.FC<AiResumeParserProps> = ({ className }) => 
             <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-6 flex">
               <AlertTriangle className="h-5 w-5 text-amber-600 mr-2 shrink-0" />
               <p className="text-sm text-amber-800 dark:text-amber-400">
-                Some information might need verification. Please review and edit the extracted data if necessary.
+                AI analysis provided by Gemini. Please review and verify the extracted information for accuracy.
               </p>
             </div>
             
             <div className="flex gap-3">
               <Button variant="outline" onClick={handleReset} className="flex-1">Upload New</Button>
-              <Button className="flex-1">Edit Profile</Button>
+              <Button className="flex-1">Update Profile</Button>
             </div>
           </div>
         )}
