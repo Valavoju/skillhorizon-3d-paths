@@ -17,7 +17,7 @@ interface ResumeAnalysis {
 }
 
 const GEMINI_API_KEY = 'AIzaSyDGEsc0HpVCcSQUI08FOdtmbpma2moL7U4';
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
 
 export const analyzeResumeWithGemini = async (resumeText: string): Promise<ResumeAnalysis> => {
   const prompt = `
@@ -53,6 +53,7 @@ export const analyzeResumeWithGemini = async (resumeText: string): Promise<Resum
   `;
 
   try {
+    console.log('Making request to Gemini API...');
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
@@ -67,20 +68,32 @@ export const analyzeResumeWithGemini = async (resumeText: string): Promise<Resum
       })
     });
 
+    console.log('Response status:', response.status);
+    
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`);
+      const errorData = await response.text();
+      console.error('API Error Response:', errorData);
+      throw new Error(`Gemini API error: ${response.status} - ${errorData}`);
     }
 
     const data = await response.json();
+    console.log('API Response:', data);
+    
     const generatedText = data.candidates[0]?.content?.parts[0]?.text;
     
     if (!generatedText) {
+      console.error('No response from Gemini API:', data);
       throw new Error('No response from Gemini API');
     }
 
+    console.log('Generated text:', generatedText);
+
     // Parse the JSON response from Gemini
     const cleanedResponse = generatedText.replace(/```json\n?|\n?```/g, '').trim();
+    console.log('Cleaned response:', cleanedResponse);
+    
     const analysis = JSON.parse(cleanedResponse);
+    console.log('Parsed analysis:', analysis);
     
     return analysis;
   } catch (error) {
