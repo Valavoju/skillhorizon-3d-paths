@@ -7,11 +7,9 @@ import {
   GraduationCap,
   Briefcase,
   Check,
-  Upload,
-  FileText,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { analyzeResumeWithGemini, extractTextFromFile } from "@/utils/geminiApi";
+import { analyzeResumeWithGemini } from "@/utils/geminiApi";
 import { useToast } from "@/hooks/use-toast";
 
 interface SkillLevel {
@@ -29,30 +27,23 @@ interface CareerMatch {
 
 interface AiMatchingCardProps {
   className?: string;
+  resumeText?: string;
 }
 
-export const AiMatchingCard: React.FC<AiMatchingCardProps> = ({ className }) => {
+export const AiMatchingCard: React.FC<AiMatchingCardProps> = ({ className, resumeText }) => {
   const [isSearching, setIsSearching] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [currentProgress, setCurrentProgress] = useState(0);
   const [matchedSkills, setMatchedSkills] = useState<SkillLevel[]>([]);
   const [careerMatches, setCareerMatches] = useState<CareerMatch[]>([]);
-  const [file, setFile] = useState<File | null>(null);
-  const [stage, setStage] = useState<'upload' | 'analyzing' | 'complete'>('upload');
+  const [stage, setStage] = useState<'ready' | 'analyzing' | 'complete'>('ready');
   const { toast } = useToast();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-    }
-  };
-
   const handleSearch = async () => {
-    if (!file) {
+    if (!resumeText) {
       toast({
-        title: "No Resume Uploaded",
-        description: "Please upload your resume first for AI career matching.",
+        title: "No Resume Available",
+        description: "Please upload your resume in the AI Resume Parser first.",
         variant: "destructive",
       });
       return;
@@ -76,8 +67,7 @@ export const AiMatchingCard: React.FC<AiMatchingCardProps> = ({ className }) => 
         });
       }, 200);
 
-      // Extract text from file and analyze with Gemini AI
-      const resumeText = await extractTextFromFile(file);
+      // Analyze with Gemini AI
       const analysis = await analyzeResumeWithGemini(resumeText);
 
       clearInterval(progressInterval);
@@ -113,7 +103,7 @@ export const AiMatchingCard: React.FC<AiMatchingCardProps> = ({ className }) => 
         variant: "destructive",
       });
       setIsSearching(false);
-      setStage('upload');
+      setStage('ready');
       setCurrentProgress(0);
     }
   };
@@ -154,8 +144,7 @@ export const AiMatchingCard: React.FC<AiMatchingCardProps> = ({ className }) => 
     setIsComplete(false);
     setMatchedSkills([]);
     setCareerMatches([]);
-    setFile(null);
-    setStage('upload');
+    setStage('ready');
   };
 
   return (
@@ -168,32 +157,19 @@ export const AiMatchingCard: React.FC<AiMatchingCardProps> = ({ className }) => 
           <h3 className="text-xl font-semibold">AI Career Matching</h3>
         </div>
 
-        {stage === 'upload' && (
+        {stage === 'ready' && (
           <>
             <p className="text-muted-foreground mb-6">
-              Upload your resume and our AI will analyze your skills to find perfect career matches using advanced Gemini AI.
+              Find perfect career matches based on your resume analysis using advanced Gemini AI.
             </p>
             
-            <div className="border-2 border-dashed border-muted rounded-lg p-6 mb-6 text-center">
-              <input
-                type="file"
-                id="career-resume-upload"
-                className="hidden"
-                accept=".pdf,.doc,.docx,.txt"
-                onChange={handleFileChange}
-              />
-              <label htmlFor="career-resume-upload" className="cursor-pointer block">
-                <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="font-medium">Upload Resume for Career Matching</p>
-                <p className="text-sm text-muted-foreground mb-2">Supports PDF, DOC, DOCX, TXT</p>
-                {file && (
-                  <div className="mt-3 py-1 px-3 bg-secondary inline-flex items-center rounded text-sm">
-                    <FileText className="h-4 w-4 mr-2" />
-                    {file.name}
-                  </div>
-                )}
-              </label>
-            </div>
+            {!resumeText && (
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-6">
+                <p className="text-amber-800 dark:text-amber-400 text-sm">
+                  Please upload your resume in the AI Resume Parser first to enable career matching.
+                </p>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="p-4 bg-secondary/50 rounded-lg flex flex-col items-center text-center">
@@ -207,7 +183,7 @@ export const AiMatchingCard: React.FC<AiMatchingCardProps> = ({ className }) => 
                 <p className="text-sm text-muted-foreground">Finds relevant opportunities for you</p>
               </div>
             </div>
-            <Button onClick={handleSearch} className="w-full" disabled={!file}>
+            <Button onClick={handleSearch} className="w-full" disabled={!resumeText}>
               Start AI Career Analysis
             </Button>
           </>
@@ -276,7 +252,7 @@ export const AiMatchingCard: React.FC<AiMatchingCardProps> = ({ className }) => 
             </div>
 
             <div className="flex gap-3">
-              <Button variant="outline" onClick={handleReset} className="flex-1">Upload New Resume</Button>
+              <Button variant="outline" onClick={handleReset} className="flex-1">Analyze Again</Button>
               <Button className="flex-1">View All Matches</Button>
             </div>
           </div>
