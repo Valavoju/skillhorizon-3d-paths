@@ -184,31 +184,31 @@ export const AiMatchingCard: React.FC<AiMatchingCardProps> = ({
         title: "Senior Software Engineer",
         company: "Google",
         requirements: ["5+ years experience", "Computer Science degree", "Full-stack development"],
-        salaryRange: "$150,000 - $220,000"
+        salaryRange: "₹12,50,000 - ₹18,50,000"
       },
       {
         title: "Data Scientist",
         company: "Microsoft",
         requirements: ["Python expertise", "Machine Learning", "Statistical analysis"],
-        salaryRange: "$130,000 - $200,000"
+        salaryRange: "₹10,80,000 - ₹16,70,000"
       },
       {
         title: "Product Manager",
         company: "Meta",
         requirements: ["Product strategy", "Cross-functional leadership", "Analytics"],
-        salaryRange: "$140,000 - $210,000"
+        salaryRange: "₹11,70,000 - ₹17,50,000"
       },
       {
         title: "ML Engineer",
         company: "OpenAI",
         requirements: ["Deep Learning", "Python/TensorFlow", "Research experience"],
-        salaryRange: "$160,000 - $250,000"
+        salaryRange: "₹13,30,000 - ₹20,90,000"
       },
       {
         title: "Full Stack Developer",
         company: "Netflix",
         requirements: ["React/Node.js", "System design", "Cloud platforms"],
-        salaryRange: "$120,000 - $180,000"
+        salaryRange: "₹10,00,000 - ₹15,00,000"
       }
     ];
 
