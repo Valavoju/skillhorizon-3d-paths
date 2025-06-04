@@ -1,8 +1,39 @@
 
+import { useState } from "react";
 import { AiMatchingCard } from "@/components/ui/ai-skills/AiMatchingCard";
 import { AiResumeParser } from "@/components/ui/ai-skills/AiResumeParser";
 
+interface ResumeAnalysis {
+  skills: string[];
+  education: {
+    degree: string;
+    institution: string;
+    period: string;
+  }[];
+  experience: {
+    title: string;
+    company: string;
+    period: string;
+    description?: string;
+  }[];
+  summary: string;
+  recommendations: string[];
+}
+
 const AiSection = () => {
+  const [resumeText, setResumeText] = useState<string>("");
+  const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysis | null>(null);
+
+  const handleResumeAnalyzed = (text: string, analysis: ResumeAnalysis) => {
+    setResumeText(text);
+    setResumeAnalysis(analysis);
+  };
+
+  const handleResumeReset = () => {
+    setResumeText("");
+    setResumeAnalysis(null);
+  };
+
   return (
     <section id="ai-match" className="py-20">
       <div className="container">
@@ -14,8 +45,14 @@ const AiSection = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <AiMatchingCard />
-          <AiResumeParser />
+          <AiMatchingCard 
+            resumeText={resumeText} 
+            resumeAnalysis={resumeAnalysis}
+          />
+          <AiResumeParser 
+            onResumeAnalyzed={handleResumeAnalyzed}
+            onResumeReset={handleResumeReset}
+          />
         </div>
       </div>
     </section>

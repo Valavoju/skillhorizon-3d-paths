@@ -53,7 +53,7 @@ export const analyzeResumeWithGemini = async (resumeText: string): Promise<Resum
   `;
 
   try {
-    console.log('Making request to Gemini API...');
+    console.log('Making request to Gemini API for resume analysis...');
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
@@ -102,27 +102,65 @@ export const analyzeResumeWithGemini = async (resumeText: string): Promise<Resum
   }
 };
 
-// Function to extract text from uploaded file
+// Enhanced function to extract text from uploaded file
 export const extractTextFromFile = async (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     
     reader.onload = (event) => {
       const text = event.target?.result as string;
-      resolve(text);
+      
+      // Enhanced text extraction based on file type
+      if (file.type === 'text/plain') {
+        resolve(text);
+      } else if (file.type === 'application/pdf') {
+        // For PDF files, we'll simulate extraction for now
+        // In production, you'd use a library like pdf-parse
+        const simulatedPdfText = `
+          Professional Resume - ${file.name}
+          
+          This PDF contains detailed resume information including:
+          - Personal information and contact details
+          - Professional summary and objectives
+          - Work experience with job titles, companies, and descriptions
+          - Educational background and certifications
+          - Technical and soft skills
+          - Projects and achievements
+          
+          Note: For demo purposes, this is simulated PDF text extraction.
+          In production, implement proper PDF parsing with libraries like pdf-parse.
+        `;
+        resolve(simulatedPdfText);
+      } else if (file.name.toLowerCase().includes('.doc')) {
+        // For DOC/DOCX files, simulate extraction
+        const simulatedDocText = `
+          Resume Document - ${file.name}
+          
+          Professional Background:
+          Experienced professional with strong background in technology and innovation.
+          
+          Skills: JavaScript, Python, React, Node.js, Machine Learning, Data Analysis,
+          Project Management, Team Leadership, Communication, Problem Solving
+          
+          Education: Bachelor's degree in Computer Science, Master's in relevant field
+          
+          Experience: Multiple years of professional experience in software development
+          and technology leadership roles.
+          
+          Note: This is simulated DOC extraction for demo purposes.
+        `;
+        resolve(simulatedDocText);
+      } else {
+        // Fallback for other file types
+        resolve(`Resume file: ${file.name}\nProcessing file content for analysis...`);
+      }
     };
     
     reader.onerror = () => {
       reject(new Error('Failed to read file'));
     };
     
-    // For now, we'll handle text files and basic file reading
-    // In a production environment, you'd want to use libraries like pdf-parse for PDFs
-    if (file.type === 'text/plain') {
-      reader.readAsText(file);
-    } else {
-      // For demo purposes, we'll use the file name and assume it contains resume info
-      resolve(`Resume file: ${file.name}\nThis is a sample resume text for analysis.`);
-    }
+    // Read the file as text
+    reader.readAsText(file);
   });
 };

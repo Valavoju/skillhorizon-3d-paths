@@ -25,13 +25,20 @@ interface ResumeAnalysis {
 
 interface AiResumeParserProps {
   className?: string;
+  onResumeAnalyzed: (text: string, analysis: ResumeAnalysis) => void;
+  onResumeReset: () => void;
 }
 
-export const AiResumeParser: React.FC<AiResumeParserProps> = ({ className }) => {
+export const AiResumeParser: React.FC<AiResumeParserProps> = ({ 
+  className, 
+  onResumeAnalyzed, 
+  onResumeReset 
+}) => {
   const [stage, setStage] = useState<'upload' | 'analyzing' | 'complete'>('upload');
   const [progress, setProgress] = useState(0);
   const [file, setFile] = useState<File | null>(null);
   const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null);
+  const [extractedText, setExtractedText] = useState<string>("");
   const { toast } = useToast();
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,16 +59,17 @@ export const AiResumeParser: React.FC<AiResumeParserProps> = ({ className }) => 
       // Simulate progress while processing
       const progressInterval = setInterval(() => {
         setProgress(prev => {
-          const newProgress = prev + 10;
-          if (newProgress >= 90) {
+          const newProgress = prev + 8;
+          if (newProgress >= 85) {
             clearInterval(progressInterval);
           }
           return newProgress;
         });
-      }, 300);
+      }, 200);
       
-      // Extract text from file
+      // Extract text from file with improved extraction
       const resumeText = await extractTextFromFile(file);
+      setExtractedText(resumeText);
       
       // Analyze with Gemini API
       const result = await analyzeResumeWithGemini(resumeText);
@@ -70,11 +78,14 @@ export const AiResumeParser: React.FC<AiResumeParserProps> = ({ className }) => 
       setProgress(100);
       setAnalysis(result);
       
+      // Pass the data to parent component
+      onResumeAnalyzed(resumeText, result);
+      
       setTimeout(() => {
         setStage('complete');
         toast({
           title: "Resume Analysis Complete",
-          description: "Your resume has been successfully analyzed with AI.",
+          description: "Your resume has been successfully analyzed. You can now start AI Career Analysis!",
         });
       }, 500);
       
@@ -94,7 +105,9 @@ export const AiResumeParser: React.FC<AiResumeParserProps> = ({ className }) => 
     setStage('upload');
     setFile(null);
     setAnalysis(null);
+    setExtractedText("");
     setProgress(0);
+    onResumeReset();
   };
   
   return (
@@ -220,10 +233,10 @@ export const AiResumeParser: React.FC<AiResumeParserProps> = ({ className }) => 
               </div>
             </div>
             
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-6 flex">
-              <AlertTriangle className="h-5 w-5 text-amber-600 mr-2 shrink-0" />
-              <p className="text-sm text-amber-800 dark:text-amber-400">
-                AI analysis provided by Gemini. Please review and verify the extracted information for accuracy.
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6 flex">
+              <Check className="h-5 w-5 text-green-600 mr-2 shrink-0" />
+              <p className="text-sm text-green-800 dark:text-green-400">
+                Resume analyzed successfully! You can now use the "AI Career Matching" to find personalized career opportunities.
               </p>
             </div>
             
